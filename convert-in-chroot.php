@@ -40,6 +40,7 @@ if (!file_exists("$chroot_dir/usr/bin/bash")) {
 
 $FILES = [
 	"lib/setup.sh",
+	"lib/build-patchelf.sh",
 	"lib/common.php",
 	"lib/install-deps.php",
 	"convert.php"
@@ -65,17 +66,17 @@ $sources = [
 
 file_put_contents("$chroot_dir/etc/apt/sources.list", implode("\n", $sources));
 
-$deps_fixup = "";
 if ($options["d"]) {
 	cmd("cp", $options["d"], "$chroot_dir/opt/d.txt");
-	$deps_fixup = "/opt/d.txt";
+} else {
+	file_put_contents("$chroot_dir/opt/d.txt", "");
 }
 
 cmd("cp", $input, "$chroot_dir/opt/input.deb");
-cmd("rm", "-rf", "$chroot_dir/opt/output.deb");
-cmd("unshare", "-u", "chroot", $chroot_dir, "/opt/lib/setup.sh", "-i", "/opt/input.deb", "-o", "/opt/output.deb", "-d", $deps_fixup, "-c");
+cmd("rm", "-rf", "$chroot_dir/tmp/output.deb");
+cmd("unshare", "-u", "chroot", $chroot_dir, "/opt/lib/setup.sh", "-i", "/opt/input.deb", "-o", "/tmp/output.deb", "-d", "/opt/d.txt", "-c");
 
-if (file_exists("$chroot_dir/opt/output.deb")) {
-	cmd("mv", "$chroot_dir/opt/output.deb", $output);
+if (file_exists("$chroot_dir/tmp/output.deb")) {
+	cmd("mv", "$chroot_dir/tmp/output.deb", $output);
 	echo "\nDone! Your new package: $output\n";
 }

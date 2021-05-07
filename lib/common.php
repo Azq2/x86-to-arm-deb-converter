@@ -164,8 +164,8 @@ function patchElf($dir, $path, $libs, $replace_libs) {
 		$interpreter = trim(cmdr("patchelf", "--print-interpreter", $path));
 		if ($interpreter) {
 			if (isset($replace_libs[$interpreter])) {
-				echo "  $interpreter -> ".$libs[$interpreter]."\n";
-				cmdr("patchelf", "--set-interpreter", $replace_libs[$interpreter], $path);
+				echo "  $interpreter -> ".$libs[basename($interpreter)]."\n";
+				cmdr("patchelf", "--set-interpreter", $replace_libs[basename($interpreter)], $path);
 			} else {
 				echo "  $interpreter - NOT FOUND\n";
 				$not_found[] = $interpreter;

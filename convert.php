@@ -42,6 +42,7 @@ echo "Unpack package...\n";
 cmd("rm", "-rf", $unpacked_dir);
 cmd("mkdir", "-p", $unpacked_dir);
 cmd("dpkg-deb", "-R", $input, $unpacked_dir);
+cmd("find", $unpacked_dir, "-type", "f", "-exec", "chmod", "+w", "{}", ";");
 
 $extlib_dir = "/usr/local/lib/ext-".$pkg["arch"]."-".$pkg["name"];
 
@@ -96,6 +97,7 @@ echo "Update debian/control...\n";
 fixPackageInfo($unpacked_dir);
 
 echo "Build package...\n";
+cmd("find", $unpacked_dir, "-type", "f", "-exec", "chmod", "-w", "{}", ";");
 cmd("fakeroot", "dpkg-deb", "-b", $unpacked_dir, $output);
 
 if (!isset($options["c"]))
