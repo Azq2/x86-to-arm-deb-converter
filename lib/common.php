@@ -3,7 +3,8 @@ function parseDepsFixup($file) {
 	$config = [
 		"add"		=> [],
 		"delete"	=> [],
-		"replace"	=> []
+		"replace"	=> [],
+		"ld_path"	=> []
 	];
 	
 	foreach (explode("\n", file_get_contents($file)) as $line) {
@@ -15,6 +16,10 @@ function parseDepsFixup($file) {
 		switch ($parts[0]) {
 			case "add":
 				$config["add"][] = $parts[1];
+			break;
+			
+			case "add-ld-path":
+				$config["ld_path"][] = $parts[1];
 			break;
 			
 			case "replace":
@@ -184,7 +189,7 @@ function isElf($file) {
 	return $magic === "\x7f\x45\x4c\x46";
 }
 
-function getLibDirs($prefix) {
+function getLibDirs($prefix, $deps_fixup) {
 	$stdout = cmdr("ldconfig", "-p");
 	preg_match_all("/=> (\/\S+)/i", $stdout, $m);
 	
@@ -194,6 +199,14 @@ function getLibDirs($prefix) {
 		"$prefix/lib32",
 		"$prefix/usr/local/lib"
 	];
+	
+	if ($deps_fixup && $deps_fixup["ld_path"]) {
+		foreach ($deps_fixup["ld_path"] as $p) {
+			$dirs[] = "$prefix/$p";
+			$dirs[] = $p;
+		}
+	}
+	
 	foreach ($m[1] as $file)
 		$dirs[$prefix.dirname($file)] = true;
 	
@@ -203,6 +216,8 @@ function getLibDirs($prefix) {
 function cmdr() {
 	$args = array_map(function ($v) { return escapeshellarg($v); }, func_get_args());
 	$cmd = implode(" ", $args);
+	
+	// echo "+ $cmd\n";
 	
 	$ret = -1;
 	ob_start();
@@ -219,6 +234,7 @@ function cmd() {
 	$args = array_map(function ($v) { return escapeshellarg($v); }, func_get_args());
 	$cmd = implode(" ", $args);
 	
+	// echo "+ $cmd\n";
 	system("LC_ALL=C ".$cmd, $ret);
 	
 	if ($ret != 0)

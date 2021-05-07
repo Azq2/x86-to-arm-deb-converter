@@ -47,21 +47,26 @@ cmd("find", $unpacked_dir, "-type", "f", "-exec", "chmod", "a+w", "{}", ";");
 $extlib_dir = "/usr/local/lib/ext-".$pkg["arch"]."-".$pkg["name"];
 
 echo "Analyze all ELF's...\n";
-$analyzer = new LibsAnalyzer(getLibDirs($unpacked_dir));
+$analyzer = new LibsAnalyzer(getLibDirs($unpacked_dir, $deps_fixup));
 $all_elfs = analyzeElfs($analyzer, $unpacked_dir);
 
 $libs = [];
 $external_libs = [];
 $replace_libs = [];
 
+// WTF
 foreach ($analyzer->getLibs() as $lib) {
 	if (strpos($lib, $unpacked_dir) !== 0) {
-		$external_libs[basename($lib)] = $lib;
-		$replace_libs[basename($lib)] = $extlib_dir."/".basename($lib);
+		if (!isset($replace_libs[basename($lib)])) {
+			$replace_libs[basename($lib)] = $extlib_dir."/".basename($lib);
+			$external_libs[basename($lib)] = $lib;
+			$libs[basename($lib)] = $lib;
+		}
 	} else {
 		$replace_libs[basename($lib)] = substr($lib, strlen($unpacked_dir));
+		$libs[basename($lib)] = $lib;
+		unset($external_libs[basename($lib)]);
 	}
-	$libs[basename($lib)] = $lib;
 }
 
 echo "Copy all external libs...\n";
