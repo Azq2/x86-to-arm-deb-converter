@@ -163,12 +163,13 @@ function patchElf($dir, $path, $libs, $replace_libs) {
 	if (stripos($path, ".so") === false) {
 		$interpreter = trim(cmdr("patchelf", "--print-interpreter", $path));
 		if ($interpreter) {
-			if (isset($replace_libs[$interpreter])) {
-				echo "  $interpreter -> ".$libs[basename($interpreter)]."\n";
-				cmdr("patchelf", "--set-interpreter", $replace_libs[basename($interpreter)], $path);
+			$lib_name = basename($interpreter);
+			if (isset($replace_libs[$lib_name])) {
+				echo "  $lib_name -> ".$libs[$lib_name]."\n";
+				cmdr("patchelf", "--set-interpreter", $replace_libs[$lib_name], $path);
 			} else {
 				echo "  $interpreter - NOT FOUND\n";
-				$not_found[] = $interpreter;
+				$not_found[] = $lib_name;
 			}
 		}
 	}
