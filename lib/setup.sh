@@ -10,7 +10,7 @@ echo "Update chroot..."
 
 apt-get update || exit 1
 apt-get full-upgrade -y || exit 1
-apt-get install -y php-cli gcc g++ gdb binutils sudo wget automake autoconf autotools-dev hashalot || exit 1
+apt-get install -y php-cli gcc g++ gdb binutils sudo wget automake autoconf autotools-dev hashalot make fakeroot || exit 1
 
 php lib/install-deps.php $@ || exit 1
 
